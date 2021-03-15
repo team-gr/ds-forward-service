@@ -11,6 +11,8 @@ func main()  {
 	logger := domain.NewLogger()
 	caller := domain.NewCaller(logger)
 	shopee := domain.NewShopeeForwarder(caller)
+	tiki := domain.NewTikiForwarder(caller, logger)
+	lazada := domain.NewLazadaForwarder(caller, logger)
 
 	r := mux.NewRouter()
 	r.NotFoundHandler = caller.NotFoundHandler()
@@ -31,6 +33,12 @@ func main()  {
 	shopeeRouter.HandleFunc("/shop/collections", shopee.GetShopCollections).Queries("shop_id", "{shop_id:[0-9]+}", "from", "{from:[0-9]+}")
 	shopeeRouter.HandleFunc("/shop/products", shopee.GetShopProducts).Queries("shop_id", "{shop_id:[0-9]+}", "from", "{from:[0-9]+}")
 	shopeeRouter.HandleFunc("/shop/malls", shopee.GetMalls)
+
+	tikiRouter := r.PathPrefix("/tiki").Subrouter()
+	tikiRouter.HandleFunc("/shop/products", tiki.GetShopProducts).Queries("username", "{username}", "page", "{page:[0-9]}")
+
+	lazadaRouter := r.PathPrefix("/lazada").Subrouter()
+	lazadaRouter.HandleFunc("/shop/id", lazada.GetShopId).Queries("shop_url", "{shop_url}")
 
 	log.Fatal(http.ListenAndServe(":9090", r))
 }
