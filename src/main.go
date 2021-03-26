@@ -40,5 +40,6 @@ func main()  {
 	lazadaRouter := r.PathPrefix("/lazada").Subrouter()
 	lazadaRouter.HandleFunc("/shop/id", lazada.GetShopId).Queries("shop_url", "{shop_url}")
 
+	log.Print("Listening on port 9090")
 	log.Fatal(http.ListenAndServe(":9090", r))
 }
