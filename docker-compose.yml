@@ -3,7 +3,8 @@ version: "3.8"
 services:
   tx_forward_service:
     image: "tuananhindocker/forward_service:${IMAGE_TAG}"
-    labels: 
+    labels:
+      - "traefik.enable=true"
       - "traefik.http.routers.forward_service.rule=Host(`forwarder.dr.smartecommerce.tech`)"
       - "traefik.http.services.forward_service.loadbalancer.server.port=9090"
     command: "./forwarder.bin"
