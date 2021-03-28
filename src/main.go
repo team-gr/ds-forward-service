@@ -3,9 +3,31 @@ package main
 import (
 	"forward-service/domain"
 	"github.com/gorilla/mux"
+	"golang.org/x/time/rate"
 	"log"
 	"net/http"
+	"strings"
+	"time"
 )
+
+var sLimiter = rate.NewLimiter(1, 1)
+var tLimiter = rate.NewLimiter(1, 1)
+
+func limit(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if strings.Contains(r.URL.Path, "tiki") {
+			for tLimiter.Allow() == false {
+				time.Sleep(10 * time.Millisecond)
+			}
+		} else {
+			for sLimiter.Allow() == false {
+				time.Sleep(10 * time.Millisecond)
+			}
+		}
+
+		next.ServeHTTP(w, r)
+	})
+}
 
 func main()  {
 	logger := domain.NewLogger()
@@ -41,5 +63,5 @@ func main()  {
 	lazadaRouter.HandleFunc("/shop/id", lazada.GetShopId).Queries("shop_url", "{shop_url}")
 
 	log.Print("Listening on port 9090")
-	log.Fatal(http.ListenAndServe(":9090", r))
+	log.Fatal(http.ListenAndServe(":9090", limit(r)))
 }
