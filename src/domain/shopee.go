@@ -13,6 +13,7 @@ const (
 	ShopeeUrlGetShopDetail       = "https://shopee.vn/api/v4/shop/get_shop_detail"
 	ShopeeUrlGetShopCategories   = "https://shopee.vn/api/v2/shop/get_categories"
 	ShopeeUrlGetMalls            = "https://shopee.vn/api/v2/brand_lists/get"
+	ShopeeUrlSimilarProducts = "https://shopee.vn/api/v4/recommend/recommend"
 )
 
 const (
@@ -56,6 +57,7 @@ func (h ShopeeForwarder) SearchProducts(w http.ResponseWriter, r *http.Request) 
 	matchId := vars["category_id"]
 	keyword := vars["keyword"]
 	newest := vars["from"]
+
 	h.Caller.Logger.Info("category: %v, keyword: %v, from: %v", matchId, keyword, newest)
 
 	url := fmt.Sprintf("%v?by=%v&limit=%v&newest=%v&order=%v&page_type=%v&version=%v", ShopeeUrlSearchProducts, by, limit, newest, order, pageType, version)
@@ -109,4 +111,21 @@ func (h ShopeeForwarder) GetShopProducts(w http.ResponseWriter, r *http.Request)
 
 func (h ShopeeForwarder) GetMalls(w http.ResponseWriter, r *http.Request) {
 	h.Caller.Forward(ShopeeUrlGetMalls, w)
+}
+
+func (h ShopeeForwarder) GetSimilarProducts(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	catid := vars["catid"]
+	itemid := vars["itemid"]
+	shopid := vars["shopid"]
+	h.Caller.ForwardWithHeaderParams(w, ShopeeUrlSimilarProducts, map[string]interface{}{
+		"catid": catid,
+		"item_card": 2,
+		"itemid": itemid,
+		"limit": Limit,
+		"offset": 0,
+		"section": "similar_product",
+		"shopid": shopid,
+		"bundle": "product_detail_page",
+	}, nil)
 }

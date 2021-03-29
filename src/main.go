@@ -37,7 +37,7 @@ func main()  {
 	lazada := domain.NewLazadaForwarder(caller, logger)
 
 	r := mux.NewRouter()
-	r.NotFoundHandler = caller.NotFoundHandler()
+	//r.NotFoundHandler = caller.NotFoundHandler()
 	r.MethodNotAllowedHandler = caller.MethodNotAllowedHandler()
 
 	shopeeRouter := r.PathPrefix("/shopee").Subrouter()
@@ -45,6 +45,7 @@ func main()  {
 	// category
 	shopeeRouter.HandleFunc("/category", shopee.GetMainCatInfo).Queries("category_id", "{category_id:[0-9]+}")
 	// products
+	shopeeRouter.HandleFunc("/product/similar", shopee.GetSimilarProducts).Queries("catid", "{catid:[0-9]+}", "shopid", "{shopid:[0-9]+}", "itemid", "{itemid:[0-9]+}")
 	shopeeRouter.HandleFunc("/product/detail", shopee.GetProductInfo).Queries("product_id", "{product_id:[0-9]+}", "shop_id", "{shop_id:[0-9]+}")
 	shopeeRouter.HandleFunc("/product/search", shopee.SearchProducts).Queries("category_id", "{category_id}", "keyword", "{keyword}").Queries("from", "{from:[0-9]+}")
 	shopeeRouter.HandleFunc("/product/search", shopee.SearchProducts).Queries("category_id", "{category_id}").Queries("from", "{from:[0-9]+}")
