@@ -17,7 +17,7 @@ const (
 )
 
 const (
-	Limit = 50
+	Limit = 48
 )
 
 type ShopeeForwarder struct {
