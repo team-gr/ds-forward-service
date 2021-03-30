@@ -37,7 +37,7 @@ func main()  {
 	lazada := domain.NewLazadaForwarder(caller, logger)
 
 	r := mux.NewRouter()
-	//r.NotFoundHandler = caller.NotFoundHandler()
+	r.NotFoundHandler = caller.NotFoundHandler()
 	r.MethodNotAllowedHandler = caller.MethodNotAllowedHandler()
 
 	shopeeRouter := r.PathPrefix("/shopee").Subrouter()
