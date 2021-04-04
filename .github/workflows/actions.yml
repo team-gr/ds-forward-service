@@ -45,6 +45,6 @@ jobs:
           username: ${{ secrets.VPS_USERNAME }}
           key: ${{ secrets.VPS_SSH_KEY }}
           script: |
-            export IMAGE_TAG=${{ steps.current-time.outputs.formattedTime }}
+            export FORWARDER_IMAGE_TAG=${{ steps.current-time.outputs.formattedTime }}
             docker container ls | grep tx_forward_service && docker-compose --project-name=gr --file="tuananh/forward-service/docker-compose.yml" down
             docker-compose --project-name=gr --file="tuananh/forward-service/docker-compose.yml" up -d
