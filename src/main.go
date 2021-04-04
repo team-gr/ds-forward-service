@@ -10,7 +10,7 @@ import (
 	"time"
 )
 
-var sLimiter = rate.NewLimiter(1, 1)
+var sLimiter = rate.NewLimiter(0.5, 1)
 var tLimiter = rate.NewLimiter(1, 1)
 
 func limit(next http.Handler) http.Handler {
