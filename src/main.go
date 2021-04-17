@@ -2,6 +2,7 @@ package main
 
 import (
 	"forward-service/domain"
+	"github.com/go-co-op/gocron"
 	"github.com/gorilla/mux"
 	"golang.org/x/time/rate"
 	"log"
@@ -10,18 +11,13 @@ import (
 	"time"
 )
 
-var sLimiter = rate.NewLimiter(0.2, 1)
-var tLimiter = rate.NewLimiter(1, 1)
+var limiter = rate.NewLimiter(1, 1)
 
 func limit(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if strings.Contains(r.URL.Path, "tiki") {
-			for tLimiter.Allow() == false {
-				time.Sleep(10 * time.Millisecond)
-			}
-		} else {
-			for sLimiter.Allow() == false {
-				time.Sleep(10 * time.Millisecond)
+		if strings.HasPrefix(r.URL.Path, "/direct") {
+			for limiter.Allow() == false {
+				time.Sleep(500 * time.Millisecond)
 			}
 		}
 
@@ -31,15 +27,39 @@ func limit(next http.Handler) http.Handler {
 
 func main()  {
 	logger := domain.NewLogger()
-	caller := domain.NewCaller(logger)
-	shopee := domain.NewShopeeForwarder(caller)
-	tiki := domain.NewTikiForwarder(caller, logger)
-	lazada := domain.NewLazadaForwarder(caller, logger)
+	pool := domain.NewProxyPool(logger)
+
+	s := gocron.NewScheduler(time.UTC)
+	s.Every(60).Minutes().Do(pool.UpdatePool)
+	s.Every(15).Minutes().Do(pool.FilterWorkingProxies)
+	s.StartAsync()
+
+	directCaller := domain.NewCaller(logger, domain.Direct, nil)
+	proxyCaller := domain.NewCaller(logger, domain.Proxy, pool)
+
+	shopee := domain.NewShopeeForwarder(directCaller)
+	tiki := domain.NewTikiForwarder(directCaller, logger)
+	lazada := domain.NewLazadaForwarder(directCaller, logger)
+
+	shopeeProxy := domain.NewShopeeForwarder(proxyCaller)
+	tikiProxy := domain.NewTikiForwarder(proxyCaller, logger)
+	lazadaProxy := domain.NewLazadaForwarder(proxyCaller, logger)
 
 	r := mux.NewRouter()
-	r.NotFoundHandler = caller.NotFoundHandler()
-	r.MethodNotAllowedHandler = caller.MethodNotAllowedHandler()
+	r.NotFoundHandler = directCaller.NotFoundHandler()
+	r.MethodNotAllowedHandler = directCaller.MethodNotAllowedHandler()
 
+	direct := r.PathPrefix("/direct").Subrouter()
+	RegisterRoutes(direct, shopee, tiki, lazada)
+
+	proxy := r.PathPrefix("/proxy").Subrouter()
+	RegisterRoutes(proxy, shopeeProxy, tikiProxy, lazadaProxy)
+
+	log.Print("Listening on port 9090")
+	log.Fatal(http.ListenAndServe(":9090", limit(r)))
+}
+
+func RegisterRoutes(r *mux.Router, shopee domain.ShopeeForwarder, tiki domain.TikiForwarder, lazada domain.LazadaForwarder) {
 	shopeeRouter := r.PathPrefix("/shopee").Subrouter()
 
 	// category
@@ -62,7 +82,4 @@ func main()  {
 
 	lazadaRouter := r.PathPrefix("/lazada").Subrouter()
 	lazadaRouter.HandleFunc("/shop/id", lazada.GetShopId).Queries("shop_url", "{shop_url}")
-
-	log.Print("Listening on port 9090")
-	log.Fatal(http.ListenAndServe(":9090", limit(r)))
 }
