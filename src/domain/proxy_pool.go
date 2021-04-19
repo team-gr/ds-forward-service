@@ -11,7 +11,7 @@ import (
 )
 
 const (
-	MaxGoroutine = 200
+	MaxGoroutine = 50
 	ProxyUrl = "http://api.insight.smartecommerce.tech/proxy"
 )
 

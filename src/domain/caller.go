@@ -81,8 +81,7 @@ func (c *Caller) Get(url string, params map[string]interface{}, headers map[stri
 		proxy, err := c.ProxyPool.GetOne()
 		if err != nil {
 			c.Logger.Error("Error: %v", err)
-		}
-		if err == nil {
+		} else {
 			client = &http.Client{
 				Transport: &http.Transport{
 					Proxy: http.ProxyURL(proxy),
