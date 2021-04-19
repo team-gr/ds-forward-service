@@ -31,7 +31,7 @@ func main()  {
 
 	s := gocron.NewScheduler(time.UTC)
 	s.Every(60).Minutes().Do(pool.UpdatePool)
-	s.Every(15).Minutes().Do(pool.FilterWorkingProxies)
+	s.Every(25).Minutes().Do(pool.FilterWorkingProxies)
 	s.StartAsync()
 
 	directCaller := domain.NewCaller(logger, domain.Direct, nil)
