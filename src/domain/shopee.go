@@ -13,7 +13,8 @@ const (
 	ShopeeUrlGetShopDetail       = "https://shopee.vn/api/v4/shop/get_shop_detail"
 	ShopeeUrlGetShopCategories   = "https://shopee.vn/api/v2/shop/get_categories"
 	ShopeeUrlGetMalls            = "https://shopee.vn/api/v2/brand_lists/get"
-	ShopeeUrlSimilarProducts = "https://shopee.vn/api/v4/recommend/recommend"
+	ShopeeUrlSimilarProducts     = "https://shopee.vn/api/v4/recommend/recommend"
+	ShopeeUrlSearchHints         = "https://shopee.vn/api/v4/search/search_hint"
 )
 
 const (
@@ -119,21 +120,30 @@ func (h ShopeeForwarder) GetSimilarProducts(w http.ResponseWriter, r *http.Reque
 	itemid := vars["itemid"]
 	shopid := vars["shopid"]
 	h.Caller.ForwardWithHeaderParams(w, ShopeeUrlSimilarProducts, map[string]interface{}{
-		"catid": catid,
+		"catid":     catid,
 		"item_card": 2,
-		"itemid": itemid,
-		"limit": Limit,
-		"offset": 0,
-		"section": "similar_product",
-		"shopid": shopid,
-		"bundle": "product_detail_page",
+		"itemid":    itemid,
+		"limit":     Limit,
+		"offset":    0,
+		"section":   "similar_product",
+		"shopid":    shopid,
+		"bundle":    "product_detail_page",
 	}, map[string]interface{}{
 		"Referer": fmt.Sprintf("https://shopee.vn/similar_products/%v/%v/%v", shopid, itemid, catid),
 	})
 }
 
+func (h ShopeeForwarder) SearchHints(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	keyword := vars["keyword"]
+	h.Caller.Forward(fmt.Sprintf("%v?keyword=%v&search_type=0&version=1", ShopeeUrlSearchHints, keyword), w)
+}
+
 func (h ShopeeForwarder) Forward(url string, w http.ResponseWriter) {
 	h.Caller.ForwardWithHeaderParams(w, url, nil, map[string]interface{}{
-		"Referer": fmt.Sprintf("https://shopee.vn"),
+		"Referer":           fmt.Sprintf("https://shopee.vn"),
+		"X-API-SOURCE":      "pc",
+		"X-Requested-With":  "XMLHttpRequest",
+		"X-Shopee-Language": "vi",
 	})
 }

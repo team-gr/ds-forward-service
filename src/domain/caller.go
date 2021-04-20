@@ -13,6 +13,7 @@ import (
 const (
 	Direct = "direct"
 	Proxy  = "proxy"
+	UserAgent = "Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:87.0) Gecko/20100101 Firefox/87.0"
 )
 
 type Caller struct {
@@ -111,6 +112,7 @@ func (c *Caller) Get(url string, params map[string]interface{}, headers map[stri
 			req.Header.Set(key, fmt.Sprintf("%v", val))
 		}
 	}
+	req.Header.Set("User-Agent", UserAgent)
 
 	res, err = client.Do(req)
 	if err != nil {

@@ -70,6 +70,7 @@ func RegisterRoutes(r *mux.Router, shopee domain.ShopeeForwarder, tiki domain.Ti
 	shopeeRouter.HandleFunc("/product/search", shopee.SearchProducts).Queries("category_id", "{category_id}", "keyword", "{keyword}").Queries("from", "{from:[0-9]+}")
 	shopeeRouter.HandleFunc("/product/search", shopee.SearchProducts).Queries("category_id", "{category_id}").Queries("from", "{from:[0-9]+}")
 	shopeeRouter.HandleFunc("/product/search", shopee.SearchProducts).Queries("keyword", "{keyword}}").Queries("from", "{from:[0-9]+}")
+	shopeeRouter.HandleFunc("/product/hints", shopee.SearchHints).Queries("keyword", "{keyword}")
 	// shops
 	shopeeRouter.HandleFunc("/shop/detail", shopee.GetShopDetail).Queries("shop_id", "{shop_id:[0-9]+}")
 	shopeeRouter.HandleFunc("/shop/detail", shopee.GetShopDetail).Queries("username", "{username}")
