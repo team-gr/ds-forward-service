@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/gorilla/mux"
 	"net/http"
+	"strconv"
 )
 
 const (
@@ -49,7 +50,6 @@ func (h ShopeeForwarder) GetProductInfo(w http.ResponseWriter, r *http.Request) 
 
 func (h ShopeeForwarder) SearchProducts(w http.ResponseWriter, r *http.Request) {
 	by := "relevancy"
-	limit := Limit
 	order := "desc"
 	pageType := "search"
 	version := 2
@@ -58,6 +58,12 @@ func (h ShopeeForwarder) SearchProducts(w http.ResponseWriter, r *http.Request) 
 	matchId := vars["category_id"]
 	keyword := vars["keyword"]
 	newest := vars["from"]
+
+	q := r.URL.Query()
+	limit, err := strconv.Atoi(q.Get("limit"))
+	if err != nil || limit <= 0 {
+		limit = Limit
+	}
 
 	h.Caller.Logger.Info("category: %v, keyword: %v, from: %v", matchId, keyword, newest)
 
