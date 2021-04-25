@@ -12,6 +12,7 @@ import (
 
 const (
 	MaxGoroutine = 50
+	LimitTry = 3
 	ProxyUrl = "http://api.insight.smartecommerce.tech/proxy"
 )
 
@@ -63,6 +64,7 @@ func (p *ProxyPool) FilterWorkingProxies() {
 		p.logger.Debug("wait for proxies")
 		time.Sleep(5 * time.Second)
 	}
+
 	workingProxies := make([]string, 0)
 	client := http.Client{Timeout: 15 * time.Second}
 	proxies := make(chan string)
@@ -78,13 +80,13 @@ func (p *ProxyPool) FilterWorkingProxies() {
 
 	for _, proxyStr := range p.Proxies {
 		guard <- struct{}{}
-		go func() {
+		go func(client http.Client, proxyStr string) {
 			defer wg.Done()
 			if ok := p.IsAvailable(client, proxyStr); ok {
 				proxies <- proxyStr
 			}
 			<- guard
-		}()
+		}(client, proxyStr)
 	}
 
 	for proxyStr := range proxies {
@@ -111,17 +113,22 @@ func (p *ProxyPool) IsAvailable(client http.Client, proxyStr string) (ok bool){
 		Proxy: http.ProxyURL(proxy),
 	}
 
-	res, err := client.Get("https://shopee.vn/api/v2/category_list/get")
-	if err != nil {
-		p.logger.Error("Send request fail: %v. Proxy: %v", err, proxy)
-		return false
+	for i := 0; i < LimitTry; i++ {
+		res, err := client.Head("https://shopee.vn")
+		if err != nil {
+			p.logger.Error("Send request fail: %v. Proxy: %v", err, proxy)
+			continue
+		}
+		if res.StatusCode != 200 {
+			p.logger.Error("Request with code: %v, proxy: %v", res.StatusCode, proxyStr)
+			continue
+		}
+
+		p.logger.Info("Proxy %v ok", proxyStr)
+		return true
 	}
-	if res.StatusCode != 200 {
-		p.logger.Error("Request with code: %v, proxy: %v", res.StatusCode, proxyStr)
-		return false
-	}
-	p.logger.Info("Proxy %v ok", proxyStr)
-	return true
+
+	return false
 }
 
 func (p *ProxyPool) GetOne() (proxyUrl *url.URL, err error) {
