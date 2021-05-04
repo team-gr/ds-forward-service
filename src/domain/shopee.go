@@ -122,11 +122,9 @@ func (h ShopeeForwarder) GetMalls(w http.ResponseWriter, r *http.Request) {
 
 func (h ShopeeForwarder) GetSimilarProducts(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
-	catid := vars["catid"]
 	itemid := vars["itemid"]
 	shopid := vars["shopid"]
 	h.Caller.ForwardWithHeaderParams(w, ShopeeUrlSimilarProducts, map[string]interface{}{
-		"catid":     catid,
 		"item_card": 2,
 		"itemid":    itemid,
 		"limit":     Limit,
@@ -135,7 +133,7 @@ func (h ShopeeForwarder) GetSimilarProducts(w http.ResponseWriter, r *http.Reque
 		"shopid":    shopid,
 		"bundle":    "product_detail_page",
 	}, map[string]interface{}{
-		"Referer": fmt.Sprintf("https://shopee.vn/similar_products/%v/%v/%v", shopid, itemid, catid),
+		"Referer": fmt.Sprintf("https://shopee.vn/similar_products/%v/%v", shopid, itemid),
 	})
 }
 
