@@ -56,7 +56,7 @@ func main()  {
 	RegisterRoutes(proxy, shopeeProxy, tikiProxy, lazadaProxy)
 
 	log.Print("Listening on port 9090")
-	log.Fatal(http.ListenAndServe(":9090", limit(r)))
+	log.Fatal(http.ListenAndServe(":9090", r))
 }
 
 func RegisterRoutes(r *mux.Router, shopee domain.ShopeeForwarder, tiki domain.TikiForwarder, lazada domain.LazadaForwarder) {
@@ -80,7 +80,5 @@ func RegisterRoutes(r *mux.Router, shopee domain.ShopeeForwarder, tiki domain.Ti
 
 	tikiRouter := r.PathPrefix("/tiki").Subrouter()
 	tikiRouter.HandleFunc("/shop/products", tiki.GetShopProducts).Queries("username", "{username}", "page", "{page:[0-9]}")
-
-	lazadaRouter := r.PathPrefix("/lazada").Subrouter()
-	lazadaRouter.HandleFunc("/shop/id", lazada.GetShopId).Queries("shop_url", "{shop_url}")
+	tikiRouter.HandleFunc("/product/detail", tiki.GetProductDetail).Queries("product_id", "{product_id:[0-9]+}", "spid", "{spid:[0-9]+}")
 }
