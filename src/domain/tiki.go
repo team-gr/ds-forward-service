@@ -32,9 +32,10 @@ func (h TikiForwarder) GetShopProducts(w http.ResponseWriter, r *http.Request) {
 
 func (h TikiForwarder) GetProductDetail(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
-	productId := vars["productId"]
+	productId := vars["product_id"]
 	spid := vars["spid"]
 
 	url := fmt.Sprintf(TikiUrlGetProductDetail, productId, spid)
+	h.Logger.Info(url)
 	h.Caller.Forward(url, w)
 }
