@@ -81,4 +81,5 @@ func RegisterRoutes(r *mux.Router, shopee domain.ShopeeForwarder, tiki domain.Ti
 	tikiRouter := r.PathPrefix("/tiki").Subrouter()
 	tikiRouter.HandleFunc("/shop/products", tiki.GetShopProducts).Queries("username", "{username}", "page", "{page:[0-9]}")
 	tikiRouter.HandleFunc("/product/detail", tiki.GetProductDetail).Queries("product_id", "{product_id:[0-9]+}", "spid", "{spid:[0-9]+}")
+	tikiRouter.HandleFunc("/product/search", tiki.SearchProducts).Queries("keyword", "{keyword}", "page", "{page:[0-9]+}")
 }
