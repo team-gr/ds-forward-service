@@ -22,7 +22,7 @@ jobs:
           utcOffset: "+07:00"
 
       - name: Build && Push to Dockerhub
-        uses: elgohr/Publish-Docker-Github-Action@master
+        uses: elgohr/Publish-Docker-Github-Action@v5
         with:
           name: tuananhindocker/forward_service:${{ steps.current-time.outputs.formattedTime }}
           username: ${{ secrets.DOCKER_USERNAME }}
